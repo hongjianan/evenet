@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package header;
+option java_package = "com.evenet.header";
+
+message Header {
+  optional uint32 length = 1;
+  optional uint32 uri_type = 2;
+  optional int16 ret_code = 3;
+  optional uint16 magic = 4;
+};

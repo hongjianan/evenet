@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package ping;
+option java_package = "com.evenet.service.ping";
+
+// service ping
+message ping_req {
+  required uint32 sno = 1;
+};
+
+message ping_rsp {
+  required uint32 sno = 1;
+};

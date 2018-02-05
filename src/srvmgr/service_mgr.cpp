@@ -5,8 +5,8 @@
  *      Author: Administrator
  */
 
-#include <srvmgr/service_mgr.h>
-#include "service/service_ping.h"
+#include "service_mgr.h"
+
 
 int service_mgr_init()
 {

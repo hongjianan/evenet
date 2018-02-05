@@ -21,10 +21,9 @@
 
 typedef struct cli_ping_t {
     connection* conn;
-    uint32_t    sno;
 } cli_ping;
 
-void cli_ping_init(cli_ping* client);
+void cli_ping_init(cli_ping* client, connection* conn);
 
 void cli_ping_release(cli_ping* client);
 

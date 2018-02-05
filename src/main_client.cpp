@@ -19,6 +19,7 @@
 #include "config.h"
 #include "debug/signal.h"
 #include "client/client_ping.h"
+#include "climgr/client_mgr.h"
 
 
 static void default_timer_cb(evutil_socket_t, short, void *)
@@ -28,13 +29,13 @@ static void default_timer_cb(evutil_socket_t, short, void *)
 
 int main_client(int argc, char* argv[])
 {
-    if (2 != argc) {
-        printf("usage: server port\n");
-        return -1;
-    }
-
-    /* init config */
-    config_load(&g_proc_conf, "../conf/evenet.conf");
+//    if (2 != argc) {
+//        printf("usage: server port\n");
+//        return -1;
+//    }
+//
+//    /* init config */
+//    config_load(&g_proc_conf, "../conf/evenet.conf");
 
     /* init white list */
     ipwl_load(&g_ipwl_mgr, "../conf/ipwl.conf");
@@ -48,9 +49,11 @@ int main_client(int argc, char* argv[])
     signal_init();
 
     /* service init */
-    client_mgr_init();
+    climgr_init();
 
     cevent_timer_add(1000 * 3600, default_timer_cb, NULL);
+
+    climgr_create_ping(g_event_base);
 
     /* base loop */
     cevent_base_loop();

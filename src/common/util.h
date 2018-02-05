@@ -5,8 +5,8 @@
  *      Author: Administrator
  */
 
-#ifndef 104_EVENET_SRC_COMMON_UTIL_H_
-#define 104_EVENET_SRC_COMMON_UTIL_H_
+#ifndef COMMON_UTIL_H_
+#define COMMON_UTIL_H_
 
 //#ifdef __cplusplus
 //extern "C" {
@@ -19,4 +19,4 @@
 //}
 //#endif
 
-#endif /* 104_EVENET_SRC_COMMON_UTIL_H_ */
+#endif /* COMMON_UTIL_H_ */

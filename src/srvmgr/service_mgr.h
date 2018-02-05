@@ -5,11 +5,12 @@
  *      Author: Administrator
  */
 
-#ifndef SRC_SERVICE_MGR_H_
-#define SRC_SERVICE_MGR_H_
+#ifndef SRVMGR_SERVICE_MGR_H_
+#define SRVMGR_SERVICE_MGR_H_
 
+#include "service/service_ping.h"
 
 int service_mgr_init();
 
 
-#endif /* SRC_SERVICE_MGR_H_ */
+#endif /* SRVMGR_SERVICE_MGR_H_ */

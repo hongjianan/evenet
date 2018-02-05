@@ -9,10 +9,11 @@
 #define SRC_CLIENT_MGR_H_
 
 #include <event2/event.h>
-#include "client/client_ping.h"
+#include "client/clihnd_ping.h"
 
-int client_mgr_init();
 
-cli_ping* client_mgr_create_cli_ping(struct event_base *base);
+int climgr_init();
+
+cli_ping* climgr_create_ping(struct event_base *base);
 
 #endif /* SRC_CLIENT_MGR_H_ */

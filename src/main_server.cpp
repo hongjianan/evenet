@@ -5,8 +5,6 @@
  *      Author: Administrator
  */
 
-#include <srvmgr/listen_mgr.h>
-#include <srvmgr/service_mgr.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -18,23 +16,26 @@
 #include "config.h"
 #include "debug/signal.h"
 
-static void timer_cb(evutil_socket_t, short, void *)
+#include "srvmgr/listen_mgr.h"
+#include "srvmgr/service_mgr.h"
+
+static void default_timer_cb(evutil_socket_t, short, void *)
 {
 //    linfo("timer_cb\n");
 }
 
 int main_server(int argc, char* argv[])
 {
-    if (2 != argc) {
-        printf("usage: server_port\n");
-        return -1;
-    }
-
-    int server_port = atoi(argv[1]);
+//    if (2 != argc) {
+//        printf("usage: server_port\n");
+//        return -1;
+//    }
+//
+//    int server_port = atoi(argv[1]);
 
     /* init config */
     config_load(&g_proc_conf, "../conf/evenet.conf");
-    g_proc_conf.server_port = server_port;
+//    g_proc_conf.server_port = server_port;
 
     /* init white list */
     ipwl_load(&g_ipwl_mgr, "../conf/ipwl.conf");
@@ -51,11 +52,11 @@ int main_server(int argc, char* argv[])
     service_mgr_init();
 
     /* init listener */
-    listen_mgr_add(&g_service_filecmp.listener);
+    listen_mgr_add(&g_service_ping.listener);
 
     listen_mgr_init(g_event_base);
 
-    cevent_timer_add(1000 * 3600, timer_cb, NULL);
+    cevent_timer_add(1000 * 3600, default_timer_cb, NULL);
 
     /* base loop */
     cevent_base_loop();

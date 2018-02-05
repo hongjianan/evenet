@@ -20,8 +20,10 @@
 #include <event2/bufferevent.h>
 
 #include "log.h"
+#include "proto/ping.pb-c.h"
 
 
+#define DEFAULT_CONN_PING_TIME      (3 * 1000)
 #define DEFAULT_CONN_TIMEOUT        (10) //bufferevent 读写超时时间
 #define DEFAULT_CONN_PROBUF_LEN     (8 * 1024)
 
@@ -50,6 +52,10 @@ typedef struct connection_t
 {
     struct event_base*  evbase;
     struct bufferevent* bev;
+    struct event*       ping_timer;
+    uint32_t            req_sno;
+    uint32_t            rsp_sno;
+
     conn_handler        handler;
     conn_status         status;
     conn_type           type;
@@ -83,6 +89,9 @@ static inline int conn_write(connection* self, uint8_t* buffer, uint32_t len)
     return bufferevent_write(self->bev, buffer, len);
 }
 
+struct event* conn_create_ping_timer(connection* self, int64_t msec);
+
+int32_t conn_ping_request_handler(connection* self, uint8_t* inbuf, size_t length, uint32_t uri);
 
 
 //#ifdef __cplusplus

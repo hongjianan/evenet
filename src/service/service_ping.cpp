@@ -87,7 +87,11 @@ static void service_ping_conn_readcb(struct bufferevent *bev, void *arg)
             return;
         }
 
-        svr_ping_request_handler(svr, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
+        if (SERVICE_PING_REQ == header->uri) {
+            conn_ping_request_handler(svr->conn, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
+        } else {
+            svr_ping_request_handler(svr, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
+        }
 
         if (svr->conn->rxpblen < pack_len) {
             free(content);

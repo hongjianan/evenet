@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include <event2/buffer.h>
 #include <event2/bufferevent.h>
 #include "packer.h"
 
@@ -23,7 +24,3 @@ int message_pack_write(struct bufferevent* bev, uint8_t* buffer, int len, uint32
                            message_pack_ref_cleanup, NULL);
 }
 
-static inline int send_message(uint8_t* msg, uint32_t length, uint32_t uri)
-{
-    return 0;
-}

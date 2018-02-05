@@ -12,17 +12,17 @@
 #include <sys/socket.h>
 
 #include "common/log.h"
-#include "client/clihnd_ping.h"
 #include "client_mgr.h"
+#include "client/client_ping.h"
 
-int client_mgr_init()
+int climgr_init()
 {
     clihnd_ping_init(&g_clihnd_ping);
 
     return 0;
 }
 
-cli_ping* client_mgr_create_cli_ping(struct event_base *base)
+cli_ping* climgr_create_ping(struct event_base *base)
 {
     cli_ping* client = (cli_ping*)malloc(sizeof(cli_ping));
     connection* conn = (connection*)malloc(sizeof(connection));
@@ -35,7 +35,7 @@ cli_ping* client_mgr_create_cli_ping(struct event_base *base)
     bufferevent_setcb(bev, handler->readcb, handler->writecb, handler->eventcb, client);
     bufferevent_enable(bev, EV_READ | EV_WRITE);
 
-    conn_init(conn, base, bev, ctor->server_ip, ctor->server_port, handler, SERVICE_PING, CONN_CONNECTING);
+    conn_init(conn, base, bev, ctor->server_ip, ctor->server_port, handler, CONN_CLIENT, CONN_CONNECTING);
 
     struct sockaddr_in* psin = &g_clihnd_ping.conntor.sin;
 

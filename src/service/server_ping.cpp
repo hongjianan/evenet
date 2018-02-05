@@ -38,17 +38,6 @@ int32_t svr_ping_request_handler(svr_ping* server, uint8_t* inbuf, size_t length
 
     switch (uri)
     {
-    case SERVICE_PING_REQ:
-    {
-        Ping__PingReq *req = ping__ping_req__unpack(NULL, length, inbuf);
-        Ping__PingRsp rsp = PING__PING_RSP__INIT;
-        /* handler */
-        svr_ping_ping_req_handler(server, req, &rsp);
-        ping__ping_req__free_unpacked(req, NULL);
-        /* pack response */
-        message_pack(ping__ping_rsp, rsp, outbuf, outlen, rsp_uri, SERVICE_PING_RSP);
-    }
-        break;
     default:
         lerror("svr_ping_do_request error message type:%d.", uri);
         return -1;
@@ -59,20 +48,5 @@ int32_t svr_ping_request_handler(svr_ping* server, uint8_t* inbuf, size_t length
     }
 
     return 0;
-}
-
-
-void svr_ping_ping_req_handler(svr_ping* server, Ping__PingReq* req, Ping__PingRsp* rsp)
-{
-    ldebug("%s sno:%u.", __FUNCTION__, req->sno);
-
-    if (server->sno != req->sno) {
-        lerror("echo sno error, server:%u client:%u", server->sno, req->sno);
-        rsp->sno = server->sno;
-        return;
-    }
-
-    server->sno = req->sno;
-    rsp->sno = req->sno;
 }
 

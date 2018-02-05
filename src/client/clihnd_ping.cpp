@@ -20,7 +20,7 @@
 #include "common/uri.h"
 #include "common/cevent.h"
 #include "common/packer.h"
-#include "client_ping.h"
+#include "clihnd_ping.h"
 
 clihnd_ping g_clihnd_ping;
 
@@ -77,7 +77,7 @@ static void clihnd_ping_conn_readcb(struct bufferevent *bev, void *arg)
         message_header* header = (message_header*)content;
 
         if (0 != message_header_check(header)) {    // 协议异常，断开连接
-            svr_ping_release(svr);
+            cli_ping_release(client);
             free(client);
             if (client->conn->rxpblen < pack_len) {
                 free(content);
@@ -85,7 +85,11 @@ static void clihnd_ping_conn_readcb(struct bufferevent *bev, void *arg)
             return;
         }
 
-        cli_ping_request_handler(client, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
+        if (SERVICE_PING_RSP == header->uri) {
+            conn_ping_request_handler(client->conn, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
+        } else {
+            cli_ping_request_handler(client, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
+        }
 
         if (client->conn->rxpblen < pack_len) {
             free(content);
@@ -102,24 +106,24 @@ static void clihnd_ping_conn_writecb(struct bufferevent *bev, void *arg)
 static void clihnd_ping_conn_eventcb(struct bufferevent *bev, short events, void *arg)
 {
     cli_ping* client = (cli_ping*)arg;
-
     ldebug("echosrv_conn_eventcb, events:%u args:%p", events, arg);
 
     if (events & BEV_EVENT_CONNECTED) {
-        linfo("Connection server success.");
+        linfo("Connection:%p server success.", client->conn);
         client->conn->status = CONN_OK;
+        conn_create_ping_timer(client->conn, 0);
         return;
+    } else if (events & BEV_EVENT_TIMEOUT) {
+        linfo("Connection:%p timeout.", client->conn);
+        client->conn->status = CONN_CLOSE;
     } else if (events & BEV_EVENT_EOF) {
-        linfo("Connection closed.");
+        linfo("Connection:%p closed.", client->conn);
         client->conn->status = CONN_CLOSE;
     } else if (events & BEV_EVENT_ERROR) {
-        lwarn("Got an error on the connection: %s.", strerror(errno));
+        lwarn("Connection:%p error:[%d][%s].", client->conn, errno, strerror(errno));
     }
-    /* None of the other events can happen here, since we haven't enabled
-     * timeouts */
-    bufferevent_free(bev);
 
-    linfo("client connection stop.");
+    cli_ping_release(client);
     cevent_base_loopexit();
 }
 

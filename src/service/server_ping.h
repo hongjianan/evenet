@@ -26,6 +26,4 @@ void svr_ping_release(svr_ping* self);
 
 int32_t svr_ping_request_handler(svr_ping* self, uint8_t* buffer, size_t length, uint32_t uri);
 
-void svr_ping_ping_req_handler(svr_ping* self, Ping__PingReq* mgs, Ping__PingRsp* rsp);
-
 #endif /* SERVICE_SERVER_PING_H_ */

@@ -10,8 +10,8 @@
 #ifndef CLIENT_CLIHND_PING_H_
 #define CLIENT_CLIHND_PING_H_
 
-//#include <vector>
-#include "common/connection.h"
+#include "common/connector.h"
+#include "client_ping.h"
 
 typedef struct clihnd_ping_t {
     connector conntor;

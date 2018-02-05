@@ -12,6 +12,7 @@
 //extern "C" {
 //#endif
 
+#include <stdlib.h>
 #include <event2/event.h>
 #include "header.h"
 
@@ -39,12 +40,6 @@ do { \
 void message_pack_ref_cleanup(const void *data, size_t datalen, void *extra);
 
 int message_pack_write(struct bufferevent* bev, uint8_t* buffer, int len, uint32_t uri);
-
-int pack_send_bin(struct bufferevent* bev, uint32_t uri, uint8_t* msg, int size);
-
-
-int unpack_recv_bin(struct bufferevent* bev, uint32_t uri, uint8_t* msg, int size);
-
 
 
 //#ifdef __cplusplus

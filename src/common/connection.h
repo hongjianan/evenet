@@ -22,12 +22,11 @@
 #include "log.h"
 #include "proto/ping.pb-c.h"
 
-
 typedef void(*conn_request_handler_t)(void*,uint8_t*,int,uint32_t);
 
 
 #define DEFAULT_CONN_PING_TIME      (3 * 1000)
-#define DEFAULT_CONN_TIMEOUT        (10) //bufferevent è¯»å†™è¶…æ—¶æ—¶é—´
+#define DEFAULT_CONN_TIMEOUT        (10) //bufferevent ¶ÁÐ´³¬Ê±Ê±¼ä
 #define DEFAULT_CONN_PROBUF_LEN     (8 * 1024)
 
 
@@ -52,17 +51,22 @@ typedef struct conn_handler
     bufferevent_event_cb    eventcb;
 } conn_handler_t;
 
+typedef struct conn_ping {
+    struct event*       ping_timer;
+    uint32_t            req_uri;
+    uint32_t            req_sno;
+    uint32_t            rsp_sno;
+} conn_ping_t;
+
 typedef struct connection_t
 {
     struct event_base*  evbase;
     struct bufferevent* bev;
-    struct event*       ping_timer;
-    uint32_t            req_sno;
-    uint32_t            rsp_sno;
 
     conn_handler_t        handler;
     conn_status_t         status;
     conn_type_t           type;
+    conn_ping_t           ping;
 
     uint32_t    rip;
     uint16_t    rport;
@@ -82,8 +86,6 @@ void conn_release(connection_t* self);
 
 int conn_create_rxbuf(connection_t* self, uint32_t len);
 
-int conn_event(connection_t* self, short events);
-
 static inline int conn_write(connection_t* self, uint8_t* buffer, uint32_t len)
 {
     assert(self);
@@ -97,8 +99,13 @@ static inline int conn_write(connection_t* self, uint8_t* buffer, uint32_t len)
 
 struct event* conn_create_ping_timer(connection_t* self, int64_t msec);
 
+void conn_ping_init(conn_ping_t* self, uint32_t req_uri);
+
 int32_t conn_ping_request_handler(connection_t* self, uint8_t* inbuf, size_t length, uint32_t uri);
 
+int conn_readcb (connection_t* self, conn_request_handler_t request_handler, void* arg);
+int conn_writecb(connection_t* self, void *arg);
+int conn_eventcb(connection_t* self, short events, void *arg);
 
 //#ifdef __cplusplus
 //}

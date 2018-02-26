@@ -15,10 +15,12 @@ void conn_init(connection_t* self, struct event_base* evbase, struct bufferevent
 {
     self->evbase = evbase;
     self->bev    = bev;
-    self->ping_timer = NULL;
 
-    self->req_sno = 0;
-    self->rsp_sno = 0;
+    if (CONN_CLIENT == type) {
+        conn_ping_init(&self->ping, SERVICE_PING_RSP);
+    } else {
+        conn_ping_init(&self->ping, SERVICE_PING_REQ);
+    }
 
     self->rip    = ip;
     self->rport  = port;
@@ -49,9 +51,9 @@ void conn_release(connection_t* self)
         self->rxpblen = 0;
     }
 
-    if (self->ping_timer) {
-        cevent_free(self->ping_timer);
-        self->ping_timer = NULL;
+    if (self->ping.ping_timer) {
+        cevent_free(self->ping.ping_timer);
+        self->ping.ping_timer = NULL;
     }
 
     self->status = CONN_CLOSE;
@@ -77,24 +79,89 @@ int conn_create_rxbuf(connection_t* self, uint32_t len)
     return conn_create_probuf(self, &self->rxpb, &self->rxpblen, len);
 }
 
-int conn_event(connection_t* self, short events)
+
+struct event* conn_create_ping_timer(connection_t* self, int64_t msec)
 {
-    if (events & BEV_EVENT_CONNECTED) {
-        linfo("Server:%p connection success.", svr);
-        return;
-    } else if (events & BEV_EVENT_EOF) {
-        lwarn("Server:%p connection closed.", svr);
-    } else if (events & BEV_EVENT_TIMEOUT) {
-        lwarn("Server:%p connection timeout.", svr);
-    } else if (events & BEV_EVENT_ERROR) {
-        lerror("Server:%p connection error:[%d][%s].", svr, errno, strerror(errno));
+    if (0 <= msec) {
+        msec = DEFAULT_CONN_PING_TIME;
     }
+    self->ping.ping_timer = cevent_timer_add(msec, conn_ping_timer, self);
+
+    return self->ping.ping_timer;
+}
+
+int conn_readcb(connection_t* self, conn_request_handler_t request_handler, void* arg)
+{
+    struct evbuffer *ebuf = bufferevent_get_input(self->bev);
+
+    int pack_len = 0;
+    for (int buf_len = evbuffer_get_length(ebuf); buf_len >= HEADER_SIZE; buf_len -= pack_len)
+    {
+        evbuffer_copyout(ebuf, &pack_len, sizeof(pack_len));
+        if (pack_len > buf_len) {
+            ldebug("message incomplete pack_len:%d buf_len:%d", pack_len, buf_len);
+            break;
+        }
+
+        //TODO:: count package length
+        uint8_t* content = NULL;
+        if (self->rxpblen < pack_len) {
+            content = (uint8_t*)malloc(pack_len);
+        } else {
+            content = self->rxpb;
+        }
+
+        evbuffer_remove(ebuf, content, pack_len);
+        message_header* header = (message_header*)content;
+
+        if (0 != message_header_check(header)) {    // Ð­ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½
+            if (self->rxpblen < pack_len) {
+                free(content);
+            }
+            return -1;
+        }
+
+        if (self->ping.req_uri == header->uri) {
+            conn_ping_request_handler(self, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
+        } else {
+            request_handler(arg, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
+        }
+
+        if (self->rxpblen < pack_len) {
+            free(content);
+        }
+    }
+
+    return 0;
+}
+
+int conn_writecb(connection_t* self, void *arg)
+{
+    return 0;
+}
+
+int conn_eventcb(connection_t* self, short events, void *arg)
+{
+    ldebug("[%s], events:%u arg:%p", __FUNCTION__, events, arg);
+
+    if (events & BEV_EVENT_CONNECTED) {
+        linfo("connection:%p success.", self);
+        return 0;
+    } else if (events & BEV_EVENT_TIMEOUT) {
+        lwarn("connection:%p timeout.", self);
+    } else if (events & BEV_EVENT_EOF) {
+        lwarn("connection:%p closed.", self);
+    } else if (events & BEV_EVENT_ERROR) {
+        lerror("connection:%p error:[%d][%s].", self, errno, strerror(errno));
+    }
+
+    return -1;
 }
 
 void conn_do_ping_req(connection_t* self)
 {
     Ping__PingReq req = PING__PING_REQ__INIT;
-    req.sno = self->req_sno++;
+    req.sno = self->ping.req_sno++;
     ldebug("connection_t:%p do ping request sno:%u.", self, req.sno);
 
     // send data to server
@@ -110,14 +177,22 @@ void conn_ping_req_handler(connection_t* self, Ping__PingReq* msg, Ping__PingRsp
     ldebug("connection_t:%p ping request sno:%u.", self, msg->sno);
     rsp->sno = msg->sno;
 
-    self->req_sno = msg->sno;
-    self->rsp_sno = msg->sno;
+    self->ping.req_sno = msg->sno;
+    self->ping.rsp_sno = msg->sno;
 }
 
 void conn_ping_rsp_handler(connection_t* self, Ping__PingRsp* msg)
 {
     ldebug("connection_t:%p ping response sno:%u.", self, msg->sno);
-    self->rsp_sno = msg->sno;
+    self->ping.rsp_sno = msg->sno;
+}
+
+void conn_ping_init(conn_ping_t* self, uint32_t req_uri)
+{
+    self->ping_timer = NULL;
+    self->req_sno = 0;
+    self->rsp_sno = 0;
+    self->req_uri = req_uri;
 }
 
 int32_t conn_ping_request_handler(connection_t* self, uint8_t* inbuf, size_t length, uint32_t uri)
@@ -166,7 +241,7 @@ void conn_ping_timer(evutil_socket_t fd, short event, void* arg)
     connection_t* conn = (connection_t*)arg;
 
     /* check ping status */
-    if (conn->req_sno != conn->rsp_sno) {
+    if (conn->ping.req_sno != conn->ping.rsp_sno) {
         lerror("connection_t:%p ping status error.", conn);
         conn->status = CONN_BROKEN;
         return;
@@ -174,83 +249,4 @@ void conn_ping_timer(evutil_socket_t fd, short event, void* arg)
 
     conn_do_ping_req(conn);
 }
-
-struct event* conn_create_ping_timer(connection_t* self, int64_t msec)
-{
-    if (0 <= msec) {
-        msec = DEFAULT_CONN_PING_TIME;
-    }
-    self->ping_timer = cevent_timer_add(msec, conn_ping_timer, self);
-
-    return self->ping_timer;
-}
-
-int conn_readcb(connection_t* self, conn_request_handler_t request_handler, void* arg)
-{
-    struct evbuffer *ebuf = bufferevent_get_input(self->bev);
-
-    int pack_len = 0;
-    for (int buf_len = evbuffer_get_length(ebuf); buf_len >= HEADER_SIZE; buf_len -= pack_len)
-    {
-        evbuffer_copyout(ebuf, &pack_len, sizeof(pack_len));
-        if (pack_len > buf_len) {
-            ldebug("message incomplete pack_len:%d buf_len:%d", pack_len, buf_len);
-            break;
-        }
-
-        //TODO:: count package length
-        uint8_t* content = NULL;
-        if (self->rxpblen < pack_len) {
-            content = (uint8_t*)malloc(pack_len);
-        } else {
-            content = self->rxpb;
-        }
-
-        evbuffer_remove(ebuf, content, pack_len);
-        message_header* header = (message_header*)content;
-
-        if (0 != message_header_check(header)) {    // Ð­ÒéÒì³££¬¶Ï¿ªÁ¬½Ó
-            if (self->rxpblen < pack_len) {
-                free(content);
-            }
-            return -1;
-        }
-
-        if (SERVICE_PING_REQ == header->uri) {
-            conn_ping_request_handler(self, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
-        } else {
-            request_handler(arg, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
-        }
-
-        if (self->rxpblen < pack_len) {
-            free(content);
-        }
-    }
-
-    return 0;
-}
-
-int conn_writecb(connection_t* self, void *arg)
-{
-    return 0;
-}
-
-int conn_eventcb(connection_t* self, short events, void *arg)
-{
-    ldebug("[%s], events:%u arg:%p", __FUNCTION__, events, arg);
-
-    if (events & BEV_EVENT_CONNECTED) {
-        linfo("connection:%p success.", self);
-        return 0;
-    } else if (events & BEV_EVENT_TIMEOUT) {
-        lwarn("connection:%p timeout.", self);
-    } else if (events & BEV_EVENT_EOF) {
-        lwarn("connection:%p closed.", self);
-    } else if (events & BEV_EVENT_ERROR) {
-        lerror("connection:%p error:[%d][%s].", self, errno, strerror(errno));
-    }
-
-    return -1;
-}
-
 

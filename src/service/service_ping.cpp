@@ -56,70 +56,30 @@ static void service_ping_conn_listencb(struct evconnlistener* listener, evutil_s
 static void service_ping_conn_readcb(struct bufferevent *bev, void *arg)
 {
     svr_ping_t* svr = (svr_ping_t*)arg;
-    struct evbuffer *ebuf = bufferevent_get_input(bev);
 
-    int pack_len = 0;
-    for (int buf_len = evbuffer_get_length(ebuf); buf_len >= HEADER_SIZE; buf_len -= pack_len)
-    {
-        evbuffer_copyout(ebuf, &pack_len, sizeof(pack_len));
-        if (pack_len > buf_len) {
-            ldebug("message incomplete pack_len:%d buf_len:%d", pack_len, buf_len);
-            break;
-        }
-
-        //TODO:: count package length
-        uint8_t* content = NULL;
-        if (svr->conn->rxpblen < pack_len) {
-            content = (uint8_t*)malloc(pack_len);
-        } else {
-            content = svr->conn->rxpb;
-        }
-
-        evbuffer_remove(ebuf, content, pack_len);
-        message_header_t* header = (message_header_t*)content;
-
-        if (0 != message_header_check(header)) {    //
-            svr_ping_release(svr);
-            free(svr);
-            if (svr->conn->rxpblen < pack_len) {
-                free(content);
-            }
-            return;
-        }
-
-        if (SERVICE_PING_REQ == header->uri) {
-            conn_ping_request_handler(svr->conn, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
-        } else {
-            svr_ping_request_handler(svr, content + sizeof(*header), pack_len - sizeof(*header), header->uri);
-        }
-
-        if (svr->conn->rxpblen < pack_len) {
-            free(content);
-        }
+    if (0 != conn_readcb(svr->conn, (conn_request_handler_t)svr_ping_request_handler, arg)) {
+        svr_ping_release(svr);
+        free(svr);
     }
 }
 
 static void service_ping_conn_writecb(struct bufferevent *bev, void *arg)
 {
+    svr_ping_t* svr = (svr_ping_t*)arg;
+
+    if (0 != conn_writecb(svr->conn, arg)) {
+        svr_ping_release(svr);
+        free(svr);
+    }
 }
 
 static void service_ping_conn_eventcb(struct bufferevent *bev, short events, void *arg)
 {
     svr_ping_t* svr = (svr_ping_t*)arg;
-    ldebug("[%s], events:%u args:%p", __FUNCTION__, events, arg);
 
-    if (events & BEV_EVENT_CONNECTED) {
-        linfo("Server:%p connection success.", svr);
-        return;
-    } else if (events & BEV_EVENT_EOF) {
-        lwarn("Server:%p connection closed.", svr);
-    } else if (events & BEV_EVENT_TIMEOUT) {
-        lwarn("Server:%p connection timeout.", svr);
-    } else if (events & BEV_EVENT_ERROR) {
-        lerror("Server:%p connection error:[%d][%s].", svr, errno, strerror(errno));
+    if (0 != conn_eventcb(svr->conn, events, arg)) {
+        svr_ping_release(svr);
+        free(svr);
     }
-
-    svr_ping_release(svr);
-    free(svr);
 }
 

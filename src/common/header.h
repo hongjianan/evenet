@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 
-typedef struct message_header_t
+typedef struct message_header
 {
 #define HEADER_MAGIC    (0x159C)
 #define HEADER_SIZE     (sizeof(message_header_t))

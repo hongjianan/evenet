@@ -1,7 +1,7 @@
 /*
  * client_mgr.h
  *
- *  Created on: 2018年1月29日
+ *  Created on: 2018-1-29
  *      Author: Administrator
  */
 
@@ -14,6 +14,6 @@
 
 int climgr_init();
 
-cli_ping* climgr_create_ping(struct event_base *base);
+cli_ping_t* climgr_create_ping(struct event_base *base);
 
 #endif /* SRC_CLIENT_MGR_H_ */

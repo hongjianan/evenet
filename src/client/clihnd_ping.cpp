@@ -3,7 +3,7 @@
  *
  *  
  *
- *  Created on: 2018年2月4日
+ *  Created on: 2018-2-4
  *      Author: Hong
  */
 
@@ -22,15 +22,15 @@
 #include "common/packer.h"
 #include "clihnd_ping.h"
 
-clihnd_ping g_clihnd_ping;
+clihnd_ping_t g_clihnd_ping;
 
 static void clihnd_ping_conn_readcb (struct bufferevent *bev, void *arg);
 static void clihnd_ping_conn_writecb(struct bufferevent *bev, void *arg);
 static void clihnd_ping_conn_eventcb(struct bufferevent *bev, short events, void *arg);
 
-void clihnd_ping_init(clihnd_ping* self)
+void clihnd_ping_init(clihnd_ping_t* self)
 {
-    connector* contor = &self->conntor;
+    connector_t* contor = &self->conntor;
     strncpy(contor->name, SERVICE_PING_NAME, MAX_SERVICE_NAME_LEN);
     contor->type = SERVICE_PING;
 
@@ -53,7 +53,7 @@ void clihnd_ping_init(clihnd_ping* self)
 
 static void clihnd_ping_conn_readcb(struct bufferevent *bev, void *arg)
 {
-    cli_ping* client = (cli_ping*)arg;
+    cli_ping_t* client = (cli_ping_t*)arg;
     struct evbuffer *ebuf = bufferevent_get_input(bev);
 
     int pack_len = 0;
@@ -74,9 +74,9 @@ static void clihnd_ping_conn_readcb(struct bufferevent *bev, void *arg)
         }
 
         evbuffer_remove(ebuf, content, pack_len);
-        message_header* header = (message_header*)content;
+        message_header_t* header = (message_header_t*)content;
 
-        if (0 != message_header_check(header)) {    // 协议异常，断开连接
+        if (0 != message_header_check(header)) {    //
             cli_ping_release(client);
             free(client);
             if (client->conn->rxpblen < pack_len) {
@@ -105,7 +105,7 @@ static void clihnd_ping_conn_writecb(struct bufferevent *bev, void *arg)
 
 static void clihnd_ping_conn_eventcb(struct bufferevent *bev, short events, void *arg)
 {
-    cli_ping* client = (cli_ping*)arg;
+    cli_ping_t* client = (cli_ping_t*)arg;
     ldebug("echosrv_conn_eventcb, events:%u args:%p", events, arg);
 
     if (events & BEV_EVENT_CONNECTED) {

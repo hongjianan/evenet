@@ -1,7 +1,7 @@
 /*
  * service_ping.h
  *
- *  Created on: 2018年1月25日
+ *  Created on: 2018-1-25
  *      Author: Administrator
  */
 
@@ -20,16 +20,19 @@
 
 #define SERVICE_PING_PORT   (12345)
 
-typedef struct service_ping_t {
-    service_listener    listener;
-} service_ping;
+typedef struct service_ping service_ping_t;
 
 
-void service_ping_init(service_ping* self);
+struct service_ping {
+    service_listener_t    listener;
+};
 
-void service_ping_release(service_ping* self);
 
-extern service_ping g_service_ping;
+void service_ping_init(service_ping_t* self);
+
+void service_ping_release(service_ping_t* self);
+
+extern service_ping_t g_service_ping;
 
 
 //#ifdef __cplusplus

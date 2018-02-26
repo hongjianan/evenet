@@ -1,14 +1,14 @@
 /*
  * flow_stat.cpp
  *
- *  Created on: 2018年1月16日
+ *  Created on: 2018-1-16
  *      Author: Administrator
  */
 
 
 #include "flow_stat.h"
 
-void tstat_output_period(traffic_stat* self, int bps)
+void tstat_output_period(flow_stat_t* self, int bps)
 {
     struct timeval newtime, difference;
 
@@ -34,7 +34,7 @@ void tstat_output_period(traffic_stat* self, int bps)
     fstat_clear_period(self);
 }
 
-void tstat_output_total(traffic_stat* self)
+void tstat_output_total(flow_stat_t* self)
 {
     struct timeval newtime, difference;
 

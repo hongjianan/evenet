@@ -1,7 +1,7 @@
 /*
  * echo_server.cpp
  *
- *  Created on: 2018年1月25日
+ *  Created on: 2018-1-25
  *      Author: Administrator
  */
 
@@ -21,13 +21,13 @@
 #include "client_ping.h"
 
 
-void cli_ping_init(cli_ping* client, connection* conn)
+void cli_ping_init(cli_ping_t* client, connection_t* conn)
 {
     client->conn = conn;
     conn_create_rxbuf(conn, DEFAULT_CONN_PROBUF_LEN);
 }
 
-void cli_ping_release(cli_ping* client)
+void cli_ping_release(cli_ping_t* client)
 {
     if (client->conn) {
         conn_release(client->conn);
@@ -36,7 +36,7 @@ void cli_ping_release(cli_ping* client)
     }
 }
 
-int32_t cli_ping_request_handler(cli_ping* self, uint8_t* inbuf, size_t length, uint32_t uri)
+int32_t cli_ping_request_handler(cli_ping_t* self, uint8_t* inbuf, size_t length, uint32_t uri)
 {
     uint8_t* outbuf = NULL;
     size_t   outlen = 0;

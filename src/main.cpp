@@ -3,13 +3,13 @@
  *
  *  
  *
- *  Created on: 2018年1月7日
+ *  Created on: 2018-1-7
  *      Author: Hong
  */
 
 #include <stdio.h>
 
-#define MAIN_SERVER
+//#define MAIN_SERVER
 
 extern int main_server(int argc, char* argv[]);
 extern int main_client(int argc, char* argv[]);

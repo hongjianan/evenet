@@ -1,7 +1,7 @@
 /*
  * listener.h
  *
- *  Created on: 2018年1月16日
+ *  Created on: 2018-1-16
  *      Author: Administrator
  */
 
@@ -16,20 +16,21 @@
 #include "connection.h"
 #include "service_type.h"
 
+typedef struct service_listener service_listener_t;
 
-typedef struct service_listener_t {
+struct service_listener {
     char name[MAX_SERVICE_NAME_LEN];
-    service_type type;
+    service_type_t type;
 
     uint32_t ip;
     uint16_t port;
 
-    struct event_base*     evbase;
-    struct evconnlistener* evlistener;
-    evconnlistener_cb   listencb;
-    conn_handler        handler;
+    struct event_base*      evbase;
+    struct evconnlistener*  evlistener;
+    evconnlistener_cb       listencb;
+    conn_handler_t          handler;
 
-} service_listener;
+};
 
 //#ifdef __cplusplus
 //}

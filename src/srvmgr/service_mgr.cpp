@@ -1,7 +1,7 @@
 /*
  * service_mgr.cpp
  *
- *  Created on: 2018年1月29日
+ *  Created on: 2018-1-29
  *      Author: Administrator
  */
 

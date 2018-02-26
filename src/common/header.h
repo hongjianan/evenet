@@ -19,16 +19,16 @@
 typedef struct message_header_t
 {
 #define HEADER_MAGIC    (0x159C)
-#define HEADER_SIZE     (sizeof(message_header))
+#define HEADER_SIZE     (sizeof(message_header_t))
 
     uint32_t length;
     uint32_t uri;
     uint16_t magic;
     int16_t  ret_code;
-} message_header;
+} message_header_t;
 
 
-static inline int message_header_check(message_header* self)
+static inline int message_header_check(message_header_t* self)
 {
     if (HEADER_MAGIC != self->magic) {
         return -1;
@@ -36,7 +36,7 @@ static inline int message_header_check(message_header* self)
     return 0;
 }
 
-static inline void message_header_set(message_header* self, uint32_t len,
+static inline void message_header_set(message_header_t* self, uint32_t len,
                                       uint32_t uri, int16_t ret_code)
 {
     self->length      = len;

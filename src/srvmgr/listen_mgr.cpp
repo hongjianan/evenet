@@ -1,7 +1,7 @@
 /*
  * listener.cpp
  *
- *  Created on: 2018年1月16日
+ *  Created on: 2018-1-16
  *      Author: Administrator
  */
 
@@ -10,22 +10,22 @@
 #include <assert.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <srvmgr/listen_mgr.h>
 #include <sys/socket.h>
 
 #include "common/log.h"
 #include "common/connection.h"
+#include "srvmgr/listen_mgr.h"
 
-std::vector<service_listener*>   g_listeners;
+std::vector<service_listener_t*>   g_listeners;
 
 int32_t listen_mgr_init(struct event_base* evbase)
 {
     assert(evbase);
 
-    for (std::vector<service_listener*>::const_iterator cit = g_listeners.begin();
+    for (std::vector<service_listener_t*>::const_iterator cit = g_listeners.begin();
          cit != g_listeners.end(); ++cit)
     {
-        service_listener* listener = *cit;
+        service_listener_t* listener = *cit;
         linfo("service:%s init, port:%u.", listener->name, listener->port);
 
         listener->evbase = evbase;
@@ -51,17 +51,17 @@ int32_t listen_mgr_init(struct event_base* evbase)
 
 int32_t listen_mgr_finish()
 {
-    for (std::vector<service_listener*>::const_iterator cit = g_listeners.begin();
+    for (std::vector<service_listener_t*>::const_iterator cit = g_listeners.begin();
          cit != g_listeners.end(); ++cit)
     {
-        service_listener* server = *cit;
+        service_listener_t* server = *cit;
         evconnlistener_free(server->evlistener);
     }
 
     return 0;
 }
 
-void listen_mgr_add(service_listener* server)
+void listen_mgr_add(service_listener_t* server)
 {
     g_listeners.push_back(server);
 }
@@ -69,7 +69,7 @@ void listen_mgr_add(service_listener* server)
 void listen_mgr_listener_cb(struct evconnlistener *listener, evutil_socket_t fd,
                             struct sockaddr *sa, int socklen, void *user_data)
 {
-    service_listener* server = (service_listener*)user_data;
+    service_listener_t* server = (service_listener_t*)user_data;
 
     struct sockaddr_in* addr = (struct sockaddr_in*)sa;
     ldebug("client connected: %s:%u.", inet_ntoa(addr->sin_addr), addr->sin_port);
@@ -81,7 +81,7 @@ void listen_mgr_listener_cb(struct evconnlistener *listener, evutil_socket_t fd,
         return;
     }
 
-    connection* conn = (connection*)malloc(sizeof(connection));
+    connection_t* conn = (connection_t*)malloc(sizeof(connection_t));
     conn_init(conn, server->evbase, bev, addr->sin_addr.s_addr, addr->sin_port, &server->handler, CONN_SERVER, CONN_OK);
 
     bufferevent_setcb(bev, server->handler.readcb, server->handler.writecb, server->handler.eventcb, conn);

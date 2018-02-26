@@ -15,18 +15,18 @@
 #include <vector>
 #include "common/listener.h"
 
-typedef std::vector<service_listener*>   listeners;
+typedef std::vector<service_listener_t*>   listeners;
 
 int32_t listen_mgr_init(struct event_base* evbase);
 
 int32_t listen_mgr_finish();
 
-void listen_mgr_add(service_listener* server);
+void listen_mgr_add(service_listener_t* server);
 
 void listen_mgr_listener_cb(struct evconnlistener *listener, evutil_socket_t fd,
                             struct sockaddr *sa, int socklen, void *user_data);
 
-extern std::vector<service_listener*>   g_listeners;
+extern std::vector<service_listener_t*>   g_listeners;
 
 //#ifdef __cplusplus
 //}

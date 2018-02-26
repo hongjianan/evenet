@@ -1,7 +1,7 @@
 /*
  * client_mgr.cpp
  *
- *  Created on: 2018年1月29日
+ *  Created on: 2018-1-29
  *      Author: Administrator
  */
 
@@ -22,15 +22,15 @@ int climgr_init()
     return 0;
 }
 
-cli_ping* climgr_create_ping(struct event_base *base)
+cli_ping_t* climgr_create_ping(struct event_base *base)
 {
-    cli_ping* client = (cli_ping*)malloc(sizeof(cli_ping));
-    connection* conn = (connection*)malloc(sizeof(connection));
+    cli_ping_t* client = (cli_ping_t*)malloc(sizeof(cli_ping_t));
+    connection_t* conn = (connection_t*)malloc(sizeof(connection_t));
     cli_ping_init(client, conn);
 
-    connector* ctor = &g_clihnd_ping.conntor;
+    connector_t* ctor = &g_clihnd_ping.conntor;
 
-    conn_handler* handler = &ctor->handler;
+    conn_handler_t* handler = &ctor->handler;
     struct bufferevent* bev = bufferevent_socket_new(base, -1, BEV_OPT_CLOSE_ON_FREE);
     bufferevent_setcb(bev, handler->readcb, handler->writecb, handler->eventcb, client);
     bufferevent_enable(bev, EV_READ | EV_WRITE);

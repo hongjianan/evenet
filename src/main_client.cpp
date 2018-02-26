@@ -1,7 +1,7 @@
 /*
  * main_client.cpp
  *
- *  Created on: 2018年1月30日
+ *  Created on: 2018-1-30
  *      Author: Administrator
  */
 

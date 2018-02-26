@@ -1,7 +1,7 @@
 /*
  * allow_ip.h
  *
- *  Created on: 2018年1月17日
+ *  Created on: 2018-1-17
  *      Author: Administrator
  */
 
@@ -14,26 +14,26 @@
 
 #include "defined.h"
 
-typedef struct ipwl_info_t
+typedef struct ipwl_info
 {
     uint32_t tmp;
-} ipwl_info;
+} ipwl_info_t;
 
-typedef struct ipwl_mgr_t
+typedef struct ipwl_mgr
 {
     uint32_t tmp;
-} ipwl_mgr;
+} ipwl_mgr_t;
 
-extern ipwl_mgr g_ipwl_mgr;
+extern ipwl_mgr_t g_ipwl_mgr;
 
-static inline ipwl_mgr* ipwl_mgr_get_instance()
+static inline ipwl_mgr_t* ipwl_mgr_get_instance()
 {
     return &g_ipwl_mgr;
 }
 
-int32_t ipwl_load(ipwl_mgr* ipwl, const char* filename);
+int32_t ipwl_load(ipwl_mgr_t* ipwl, const char* filename);
 
-int32_t ipwl_add(ipwl_mgr* ipwl, uint32_t left_ip, uint32_t right_ip);
+int32_t ipwl_add(ipwl_mgr_t* ipwl, uint32_t left_ip, uint32_t right_ip);
 
 //#ifdef __cplusplus
 //}

@@ -1,7 +1,7 @@
 /*
  * service_type.h
  *
- *  Created on: 2018年1月26日
+ *  Created on: 2018-1-26
  *      Author: Administrator
  */
 
@@ -18,12 +18,12 @@
 #define SERVICE_FILECMP_NAME    ("service_filecmp")
 
 
-typedef enum service_type_t {
+typedef enum service_type {
     SERVICE_COMMON      = 0,
     SERVICE_PING        = 1,
     SERVICE_FILECMP     = 2,
     SERVICE_UNKNOWN
-} service_type;
+} service_type_t;
 
 
 //#ifdef __cplusplus

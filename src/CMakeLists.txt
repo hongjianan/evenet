@@ -1,24 +1,24 @@
 
-########## cmakeç‰ˆæœ¬   ##########
+########## cmake°æ±¾   ##########
 #cmake_minmum_required(VERSION 2.5 FATAL_ERROR)
 
-########## å·¥ç¨‹   ##########
+########## ¹¤³Ì   ##########
 project(evenet)
 
-########## ç¼–è¯‘é€‰é¡¹   ##########
-##### c++ç‰ˆæœ¬  #####
+########## ±àÒëÑ¡Ïî   ##########
+##### c++°æ±¾  #####
 set(CMAKE_CXX_STANDARD 11)
 #add_definitions(-std=c++11)
-##### ç¼–è¯‘ä¿¡æ¯è¾“å‡º  #####
+##### ±àÒëĞÅÏ¢Êä³ö  #####
 #set(CMAKE_VERBOSE_MAKEFILE ON)
-##### ä¼˜åŒ–  #####
+##### ÓÅ»¯  #####
 add_definitions(-O0  -g3)
 ##### -D #####
 
-########## æºæ–‡ä»¶ç›®å½•  ##########
-##### å•ç‹¬æºæ–‡ä»¶  #####
+########## Ô´ÎÄ¼şÄ¿Â¼  ##########
+##### µ¥¶ÀÔ´ÎÄ¼ş  #####
 #set(SOURCE_FILES xxx.cpp)
-##### æºæ–‡ä»¶ç›®å½•  #####
+##### Ô´ÎÄ¼şÄ¿Â¼  #####
 aux_source_directory(.  SOURCE_FILES)
 aux_source_directory(common  SOURCE_FILES)
 aux_source_directory(proto  SOURCE_FILES)
@@ -32,26 +32,26 @@ message(STATUS "=============== compile file ===============")
 message(STATUS ${SOURCE_FILES})
 message(STATUS "============================================")
 
-########## å¤´æ–‡ä»¶æœç´¢è·¯å¾„  ##########
+########## Í·ÎÄ¼şËÑË÷Â·¾¶  ##########
 include_directories(${PROJECT_SOURCE_DIR})
 message(STATUS "=============== include path ===============")
 message(STATUS ${PROJECT_SOURCE_DIR})
 message(STATUS "=============== include path ===============")
 
 
-########## è¾“å‡º   ##########
-##### è·¯å¾„ #####
-### æ‰§è¡Œæ–‡ä»¶
+########## Êä³ö   ##########
+##### Â·¾¶ #####
+### Ö´ĞĞÎÄ¼ş
 #set(EXECUTABLE_OUTPUT_PATH  PROJECT_BINARY_DIR)
-### é“¾æ¥åº“
+### Á´½Ó¿â
 #set(LIBRARY_OUTPUT_PATH  PROJECT_BINARY_DIR)
 
-##### è¾“å‡ºæ–‡ä»¶  #####
+##### Êä³öÎÄ¼ş  #####
 add_executable(${PROJECT_NAME}  ${SOURCE_FILES})
 
-########## é“¾æ¥åº“  ##########
-##### åº“è·¯å¾„  #####
-##### é“¾æ¥åº“  #####
+########## Á´½Ó¿â  ##########
+##### ¿âÂ·¾¶  #####
+##### Á´½Ó¿â  #####
 #target_link_libraries(${PROJECT_NAME}  event event_openssl ssl crypto)
 target_link_libraries(${PROJECT_NAME}  event protobuf-c)
 

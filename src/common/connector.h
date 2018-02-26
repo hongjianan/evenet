@@ -3,7 +3,7 @@
  *
  *  
  *
- *  Created on: 2018年2月4日
+ *  Created on: 2018-2-4
  *      Author: Hong
  */
 
@@ -13,16 +13,16 @@
 #include "service_type.h"
 #include "connection.h"
 
-typedef struct connector_t {
+typedef struct connector {
     char name[MAX_SERVICE_NAME_LEN];
-    service_type type;
+    service_type_t type;
 
     uint32_t server_ip;
     uint16_t server_port;
     struct sockaddr_in  sin;
 
-    conn_handler        handler;
-} connector;
+    conn_handler_t        handler;
+} connector_t;
 
 
 #endif /* COMMON_CONNECTOR_H_ */

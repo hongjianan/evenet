@@ -26,9 +26,9 @@ typedef struct flow_stat_t
 
     struct timeval begin_time_total;
     struct timeval begin_time_period;
-} traffic_stat;
+} flow_stat_t;
 
-static inline void fstat_init(traffic_stat* self, struct timeval* begin)
+static inline void fstat_init(flow_stat_t* self, struct timeval* begin)
 {
     self->rx_bytes_total    = 0;
     self->rx_packets_total  = 0;
@@ -44,7 +44,7 @@ static inline void fstat_init(traffic_stat* self, struct timeval* begin)
     self->begin_time_period = *begin;
 }
 
-static inline void fstat_calc_total(traffic_stat* self)
+static inline void fstat_calc_total(flow_stat_t* self)
 {
     self->rx_bytes_total    += self->rx_bytes_period;
     self->rx_packets_total  += self->rx_packets_period;
@@ -52,7 +52,7 @@ static inline void fstat_calc_total(traffic_stat* self)
     self->tx_packets_total  += self->tx_packets_period;
 }
 
-static inline void fstat_clear_period(traffic_stat* self)
+static inline void fstat_clear_period(flow_stat_t* self)
 {
     self->rx_bytes_period = 0;
     self->rx_packets_period = 0;
@@ -60,9 +60,9 @@ static inline void fstat_clear_period(traffic_stat* self)
     self->tx_packets_period = 0;
 }
 
-void tstat_output_period(traffic_stat* self, int bps);
+void tstat_output_period(flow_stat_t* self, int bps);
 
-void tstat_output_total(traffic_stat* self);
+void tstat_output_total(flow_stat_t* self);
 
 //#ifdef __cplusplus
 //}

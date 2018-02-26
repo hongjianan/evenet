@@ -1,7 +1,7 @@
 /*
  * echo_server.cpp
  *
- *  Created on: 2018å¹´1æœˆ25æ—¥
+ *  Created on: 2018-1-25
  *      Author: Administrator
  */
 
@@ -15,7 +15,7 @@
 #include "common/uri.h"
 #include "service_ping.h"
 
-service_ping g_service_ping;
+service_ping_t g_service_ping;
 
 static void service_ping_conn_listencb(struct evconnlistener* listener, evutil_socket_t fd,
                                        struct sockaddr* addr, int socklen, void* arg);
@@ -23,7 +23,7 @@ static void service_ping_conn_readcb (struct bufferevent *bev, void *arg);
 static void service_ping_conn_writecb(struct bufferevent *bev, void *arg);
 static void service_ping_conn_eventcb(struct bufferevent *bev, short events, void *arg);
 
-void service_ping_init(service_ping* self)
+void service_ping_init(service_ping_t* self)
 {
     strncpy(self->listener.name, SERVICE_PING_NAME, MAX_SERVICE_NAME_LEN);
     self->listener.type = SERVICE_PING;
@@ -40,11 +40,11 @@ void service_ping_init(service_ping* self)
 static void service_ping_conn_listencb(struct evconnlistener* listener, evutil_socket_t fd,
                                        struct sockaddr* addr, int socklen, void* arg)
 {
-    connection*  conn = (connection*)arg;
-    svr_ping*    svr  = (svr_ping*)malloc(sizeof(svr_ping));
+    connection_t*  conn = (connection_t*)arg;
+    svr_ping_t*    svr  = (svr_ping_t*)malloc(sizeof(svr_ping_t));
     svr_ping_init(svr, conn);
 
-    // åˆ›å»ºåè®®è§£æžç¼“å­˜
+    // ´´½¨½ÓÊÜ»º´æ¼õÉÙÄÚ´æÉêÇë
     if (0 != conn_create_rxbuf(conn, DEFAULT_CONN_PROBUF_LEN)) {
         lwarn("conn_create_rxbuf error");
     }
@@ -55,7 +55,7 @@ static void service_ping_conn_listencb(struct evconnlistener* listener, evutil_s
 
 static void service_ping_conn_readcb(struct bufferevent *bev, void *arg)
 {
-    svr_ping* svr = (svr_ping*)arg;
+    svr_ping_t* svr = (svr_ping_t*)arg;
     struct evbuffer *ebuf = bufferevent_get_input(bev);
 
     int pack_len = 0;
@@ -76,9 +76,9 @@ static void service_ping_conn_readcb(struct bufferevent *bev, void *arg)
         }
 
         evbuffer_remove(ebuf, content, pack_len);
-        message_header* header = (message_header*)content;
+        message_header_t* header = (message_header_t*)content;
 
-        if (0 != message_header_check(header)) {    // åè®®å¼‚å¸¸ï¼Œæ–­å¼€è¿žæŽ¥
+        if (0 != message_header_check(header)) {    //
             svr_ping_release(svr);
             free(svr);
             if (svr->conn->rxpblen < pack_len) {
@@ -105,7 +105,7 @@ static void service_ping_conn_writecb(struct bufferevent *bev, void *arg)
 
 static void service_ping_conn_eventcb(struct bufferevent *bev, short events, void *arg)
 {
-    svr_ping* svr = (svr_ping*)arg;
+    svr_ping_t* svr = (svr_ping_t*)arg;
     ldebug("[%s], events:%u args:%p", __FUNCTION__, events, arg);
 
     if (events & BEV_EVENT_CONNECTED) {

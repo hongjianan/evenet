@@ -77,7 +77,7 @@ static void service_ping_conn_eventcb(struct bufferevent *bev, short events, voi
 {
     svr_ping_t* svr = (svr_ping_t*)arg;
 
-    if (0 != conn_eventcb(svr->conn, events, arg)) {
+    if (0 != conn_eventcb(svr->conn, events, arg, -1)) {
         svr_ping_release(svr);
         free(svr);
     }

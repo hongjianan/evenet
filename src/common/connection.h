@@ -91,21 +91,17 @@ static inline int conn_write(connection_t* self, uint8_t* buffer, uint32_t len)
     assert(self);
 
     if (CONN_OK != self->status) {
-        lerror("connection_t:%p is not CONN_OK, status:%d", self, self->status);
+        lerror("connection:%p is not CONN_OK, status:%d", self, self->status);
         return -2;
     }
     return bufferevent_write(self->bev, buffer, len);
 }
 
-struct event* conn_create_ping_timer(connection_t* self, int64_t msec);
-
-void conn_ping_init(conn_ping_t* self, uint32_t req_uri);
-
-int32_t conn_ping_request_handler(connection_t* self, uint8_t* inbuf, size_t length, uint32_t uri);
-
 int conn_readcb (connection_t* self, conn_request_handler_t request_handler, void* arg);
+
 int conn_writecb(connection_t* self, void *arg);
-int conn_eventcb(connection_t* self, short events, void *arg);
+
+int conn_eventcb(connection_t* self, short events, void *arg, int64_t msec);
 
 //#ifdef __cplusplus
 //}

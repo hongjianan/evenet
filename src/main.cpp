@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 
-//#define MAIN_SERVER
+#define MAIN_SERVER
 
 extern int main_server(int argc, char* argv[]);
 extern int main_client(int argc, char* argv[]);

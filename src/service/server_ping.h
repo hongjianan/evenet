@@ -17,8 +17,6 @@ typedef struct svr_ping svr_ping_t;
 struct svr_ping {
     connection_t*   conn;
     service_ping_t* service;
-
-    uint32_t      sno;
 };
 
 void svr_ping_init(svr_ping_t* self, connection_t* conn);

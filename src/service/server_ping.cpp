@@ -20,8 +20,10 @@
 
 void svr_ping_init(svr_ping_t* self, connection_t* conn)
 {
+    assert(self);
+    assert(conn);
+
     self->conn = conn;
-    self->sno = 0;
 }
 
 void svr_ping_release(svr_ping_t* self)

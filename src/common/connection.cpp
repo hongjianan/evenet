@@ -33,7 +33,7 @@ static void conn_do_ping_req(connection_t* self)
     size_t   outlen = 0;
     uint32_t rsp_uri = 0;
     message_pack(ping__ping_req, req, outbuf, outlen, rsp_uri, SERVICE_PING_REQ);
-    message_pack_write(self->bev, outbuf, outlen, rsp_uri);
+    conn_pack_write(self, outbuf, outlen, rsp_uri);
 }
 
 static void conn_ping_req_handler(connection_t* self, Ping__PingReq* msg, Ping__PingRsp* rsp)
@@ -86,7 +86,7 @@ static int32_t conn_ping_request_handler(connection_t* self, uint8_t* inbuf, siz
     }
 
     if (outbuf) {
-        message_pack_write(self->bev, outbuf, outlen, rsp_uri);
+        conn_pack_write(self, outbuf, outlen, rsp_uri);
     }
 
     return 0;
@@ -121,8 +121,9 @@ struct event* conn_create_ping_timer(connection_t* self, int64_t msec)
 void conn_init(connection_t* self, struct event_base* evbase, struct bufferevent* bev,
                uint32_t ip, uint16_t port, conn_handler_t* handler, conn_type_t type, conn_status_t status)
 {
-    self->evbase = evbase;
-    self->bev    = bev;
+    self->evbase  = evbase;
+    self->bev     = bev;
+    self->eoutbuf = bufferevent_get_output(bev);
 
     if (CONN_CLIENT == type) {
         conn_ping_init(&self->ping, SERVICE_PING_RSP);
@@ -187,6 +188,20 @@ int conn_create_rxbuf(connection_t* self, uint32_t len)
     return conn_create_probuf(self, &self->rxpb, &self->rxpblen, len);
 }
 
+static void conn_pack_write_ref_cleanup(const void *data, size_t datalen, void *extra)
+{
+    free((void*)data);
+}
+
+int conn_pack_write(connection_t* self, uint8_t* buffer, int len, uint32_t uri)
+{
+    message_header_t* header = (message_header_t*)buffer;
+    message_header_set(header, len, uri, 0);
+
+    return evbuffer_add_reference(self->eoutbuf, buffer, len,
+                                  conn_pack_write_ref_cleanup, NULL);
+}
+
 int conn_readcb(connection_t* self, conn_request_handler_t request_handler, void* arg)
 {
     struct evbuffer *ebuf = bufferevent_get_input(self->bev);
@@ -208,10 +223,11 @@ int conn_readcb(connection_t* self, conn_request_handler_t request_handler, void
             content = self->rxpb;
         }
 
+        self->recvbytes += pack_len;
         evbuffer_remove(ebuf, content, pack_len);
         message_header* header = (message_header*)content;
 
-        if (0 != message_header_check(header)) {    // Э���쳣���Ͽ�����
+        if (0 != message_header_check(header)) {    //
             if (self->rxpblen < pack_len) {
                 free(content);
             }

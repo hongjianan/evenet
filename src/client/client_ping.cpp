@@ -50,7 +50,7 @@ int32_t cli_ping_request_handler(cli_ping_t* self, uint8_t* inbuf, size_t length
     }
 
     if (outbuf) {
-        message_pack_write(self->conn->bev, outbuf, outlen, rsp_uri);
+        conn_pack_write(self->conn, outbuf, outlen, rsp_uri);
     }
 
     return 0;

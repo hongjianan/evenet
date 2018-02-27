@@ -62,6 +62,7 @@ typedef struct connection_t
 {
     struct event_base*  evbase;
     struct bufferevent* bev;
+    struct evbuffer*    eoutbuf;
 
     conn_handler_t        handler;
     conn_status_t         status;
@@ -86,16 +87,7 @@ void conn_release(connection_t* self);
 
 int conn_create_rxbuf(connection_t* self, uint32_t len);
 
-static inline int conn_write(connection_t* self, uint8_t* buffer, uint32_t len)
-{
-    assert(self);
-
-    if (CONN_OK != self->status) {
-        lerror("connection:%p is not CONN_OK, status:%d", self, self->status);
-        return -2;
-    }
-    return bufferevent_write(self->bev, buffer, len);
-}
+int conn_pack_write(connection_t* self, uint8_t* buffer, int len, uint32_t uri);
 
 int conn_readcb (connection_t* self, conn_request_handler_t request_handler, void* arg);
 

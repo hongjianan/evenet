@@ -47,7 +47,7 @@ int32_t svr_ping_request_handler(svr_ping_t* server, uint8_t* inbuf, size_t leng
     }
 
     if (outbuf) {
-        message_pack_write(server->conn->bev, outbuf, outlen, rsp_uri);
+        conn_pack_write(server->conn, outbuf, outlen, rsp_uri);
     }
 
     return 0;
